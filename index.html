@@ -203,7 +203,7 @@
       font-weight: 500;
       font-family: 'Inter', sans-serif;
       cursor: pointer;
-      position: fixed;
+      position: static;
       user-select: none;
       white-space: nowrap;
       z-index: 999;
@@ -211,7 +211,9 @@
       background: rgba(253, 248, 244, 0.85);
       transition: transform 0.2s ease, font-size 0.3s ease, opacity 0.3s ease;
       transform-origin: center;
-      visibility: hidden;
+    }
+    .btn-no.fleeing {
+      position: fixed;
     }
 
     /* ── Calendar ── */
@@ -489,7 +491,6 @@
             document.getElementById('sub-text').classList.add('visible');
             setTimeout(function() {
               document.getElementById('btn-row').classList.add('visible');
-              setTimeout(initNoBtn, 100);
             }, 400);
           }, 300);
         }, 500);
@@ -505,17 +506,10 @@
   var noClicks = 0;
   var noScale = 1;
 
-  function initNoBtn() {
-    var row = document.querySelector('.btn-row');
-    var rect = row.getBoundingClientRect();
-    var btnW = noBtn.offsetWidth;
-    var btnH = noBtn.offsetHeight;
-    noBtn.style.left = (rect.right - btnW) + 'px';
-    noBtn.style.top  = (rect.top + (rect.height - btnH) / 2) + 'px';
-    noBtn.style.visibility = 'visible';
-  }
-
   function runAway() {
+    if (!noBtn.classList.contains('fleeing')) {
+      noBtn.classList.add('fleeing');
+    }
     noClicks = Math.min(noClicks + 1, noPhrases.length - 1);
     noBtn.textContent = noPhrases[noClicks];
     noScale = Math.max(0.55, noScale - 0.1);
@@ -537,7 +531,6 @@
   noBtn.addEventListener('mouseover', runAway);
   noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); runAway(); }, { passive: false });
   noBtn.addEventListener('click', function(e){ e.preventDefault(); runAway(); });
-  window.addEventListener('resize', initNoBtn);
 
   /* ── Coffee clink sound (Web Audio API) ── */
   function playClink() {
