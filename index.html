@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coffee Date?</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink: #e8536a;
+      --pink-dark: #c73d55;
+      --pink-light: #fde8eb;
+      --cream: #fffaf7;
+      --brown: #5c3d2e;
+      --brown-light: #8b6355;
+      --gray: #6b7280;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .page { width: 100vw; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(232, 83, 106, 0.12), 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .icon { font-size: 56px; display: block; margin-bottom: 1.25rem; animation: bob 2s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+    h1 { font-size: 26px; font-weight: 700; color: var(--brown); margin-bottom: 0.5rem; }
+    .sub { font-size: 18px; color: var(--brown-light); margin-bottom: 2.25rem; }
+
+    .btn-row { display: flex; gap: 14px; justify-content: center; }
+
+    .btn-yes {
+      background: var(--pink);
+      color: #fff;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 50px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      box-shadow: 0 4px 16px rgba(232,83,106,0.3);
+    }
+    .btn-yes:hover { background: var(--pink-dark); transform: scale(1.04); }
+    .btn-yes:active { transform: scale(0.97); }
+
+    .btn-no {
+      background: #fff;
+      color: var(--gray);
+      border: 1.5px solid #e5e7eb;
+      padding: 14px 40px;
+      border-radius: 50px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      position: fixed;
+      user-select: none;
+      white-space: nowrap;
+      transition: none;
+      z-index: 999;
+    }
+
+    /* --- Calendar --- */
+    #calendar-card { display: none; }
+    #calendar-card.show { display: block; }
+
+    .cal-title { font-size: 20px; font-weight: 700; color: var(--brown); margin-bottom: 0.4rem; }
+    .cal-sub { font-size: 14px; color: var(--gray); margin-bottom: 1.75rem; }
+
+    .section-label { font-size: 13px; font-weight: 600; color: var(--pink); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+
+    .day-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.75rem; }
+    .day-btn {
+      padding: 14px 6px;
+      border-radius: 14px;
+      border: 1.5px solid #e5e7eb;
+      background: #fafafa;
+      color: var(--brown);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .day-btn span { display: block; font-size: 12px; color: var(--gray); font-weight: 400; margin-top: 2px; }
+    .day-btn:hover { border-color: var(--pink); background: var(--pink-light); color: var(--pink-dark); }
+    .day-btn.sel { border-color: var(--pink); background: var(--pink); color: #fff; box-shadow: 0 4px 12px rgba(232,83,106,0.25); }
+    .day-btn.sel span { color: rgba(255,255,255,0.8); }
+
+    .time-section { display: none; }
+    .time-section.show { display: block; }
+    .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.75rem; }
+    .time-btn {
+      padding: 10px 4px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      background: #fafafa;
+      color: var(--brown);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .time-btn:hover { border-color: var(--pink); background: var(--pink-light); color: var(--pink-dark); }
+    .time-btn.sel { border-color: var(--pink); background: var(--pink); color: #fff; }
+
+    .confirm-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--pink);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.2s;
+      box-shadow: 0 4px 16px rgba(232,83,106,0.3);
+    }
+    .confirm-btn:hover:not(:disabled) { background: var(--pink-dark); transform: scale(1.02); }
+    .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    /* --- Success --- */
+    #success-card { display: none; }
+    #success-card.show { display: block; }
+    .confetti { font-size: 52px; display: block; margin-bottom: 1rem; animation: pop 0.5s cubic-bezier(0.17,0.89,0.32,1.28) both; }
+    @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .success-title { font-size: 26px; font-weight: 700; color: var(--brown); margin-bottom: 0.5rem; }
+    .success-detail { font-size: 16px; color: var(--brown-light); line-height: 1.7; margin-bottom: 1.25rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; background: #e6f9f0; color: #1a7a4a;
+      border-radius: 50px; font-size: 13px; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Invite -->
+  <div class="card" id="invite-card">
+    <span class="icon">☕</span>
+    <h1>I think you are cute</h1>
+    <p class="sub">Want to grab coffee with me?</p>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="showCalendar()">Yes 💕</button>
+      <button class="btn-no" id="btn-no">No</button>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="card" id="calendar-card">
+    <span class="icon" style="animation:none">🗓️</span>
+    <p class="cal-title">Amazing! Pick a day</p>
+    <p class="cal-sub">Coffee is always better with good company</p>
+
+    <p class="section-label">Choose a day</p>
+    <div class="day-grid" id="day-grid"></div>
+
+    <div class="time-section" id="time-section">
+      <p class="section-label">Choose a time</p>
+      <div class="time-grid" id="time-grid"></div>
+    </div>
+
+    <button class="confirm-btn" id="confirm-btn" disabled onclick="confirmDate()">Confirm our coffee date ☕</button>
+  </div>
+
+  <!-- Success -->
+  <div class="card" id="success-card">
+    <span class="confetti">🎉</span>
+    <p class="success-title">It's a date!</p>
+    <p class="success-detail" id="success-detail"></p>
+    <span class="badge">✓ Saved to your calendar</span>
+  </div>
+
+</div>
+
+<script>
+  var selectedDay = null;
+  var selectedTime = null;
+  var noBtn = document.getElementById('btn-no');
+
+  // Position No button over its natural spot first render
+  function initNoBtn() {
+    var row = document.querySelector('.btn-row');
+    var rect = row.getBoundingClientRect();
+    var btnW = noBtn.offsetWidth;
+    var btnH = noBtn.offsetHeight;
+    noBtn.style.left = (rect.right - btnW) + 'px';
+    noBtn.style.top  = (rect.top + (rect.height - btnH) / 2) + 'px';
+  }
+
+  function runAway() {
+    var margin = 16;
+    var btnW = noBtn.offsetWidth;
+    var btnH = noBtn.offsetHeight;
+    var maxX = window.innerWidth  - btnW - margin;
+    var maxY = window.innerHeight - btnH - margin;
+    var x = Math.random() * maxX + margin;
+    var y = Math.random() * maxY + margin;
+    noBtn.style.left = x + 'px';
+    noBtn.style.top  = y + 'px';
+  }
+
+  noBtn.addEventListener('mouseover',   runAway);
+  noBtn.addEventListener('touchstart',  function(e){ e.preventDefault(); runAway(); }, { passive: false });
+  noBtn.addEventListener('click',       function(e){ e.preventDefault(); runAway(); });
+
+  window.addEventListener('load', function() { setTimeout(initNoBtn, 50); });
+  window.addEventListener('resize', initNoBtn);
+
+  // Build dates: next Fri/Sat/Sun
+  function getDates() {
+    var days  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var today = new Date();
+    var dow   = today.getDay();
+    var toFri = (5 - dow + 7) % 7 || 7;
+    return [0,1,2].map(function(offset) {
+      var d = new Date(today);
+      d.setDate(today.getDate() + toFri + offset);
+      return { label: days[d.getDay()], date: months[d.getMonth()] + ' ' + d.getDate(), full: d.toDateString(), iso: d.toISOString().split('T')[0] };
+    });
+  }
+
+  var times = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
+
+  function showCalendar() {
+    document.getElementById('invite-card').style.display = 'none';
+    noBtn.style.display = 'none';
+
+    var calCard = document.getElementById('calendar-card');
+    calCard.classList.add('show');
+
+    // Days
+    var dayGrid = document.getElementById('day-grid');
+    getDates().forEach(function(d) {
+      var btn = document.createElement('button');
+      btn.className = 'day-btn';
+      btn.innerHTML = d.label + '<span>' + d.date + '</span>';
+      btn.onclick = function() {
+        dayGrid.querySelectorAll('.day-btn').forEach(function(b){ b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        selectedDay = d;
+        document.getElementById('time-section').classList.add('show');
+        checkConfirm();
+      };
+      dayGrid.appendChild(btn);
+    });
+
+    // Times
+    var timeGrid = document.getElementById('time-grid');
+    times.forEach(function(t) {
+      var btn = document.createElement('button');
+      btn.className = 'time-btn';
+      btn.textContent = t;
+      btn.onclick = function() {
+        timeGrid.querySelectorAll('.time-btn').forEach(function(b){ b.classList.remove('sel'); });
+        btn.classList.add('sel');
+        selectedTime = t;
+        checkConfirm();
+      };
+      timeGrid.appendChild(btn);
+    });
+  }
+
+  function checkConfirm() {
+    document.getElementById('confirm-btn').disabled = !(selectedDay && selectedTime);
+  }
+
+  function confirmDate() {
+    var booking = { day: selectedDay.full, dayIso: selectedDay.iso, time: selectedTime, confirmedAt: new Date().toISOString() };
+    try { localStorage.setItem('coffeeDate', JSON.stringify(booking)); } catch(e) {}
+
+    document.getElementById('calendar-card').classList.remove('show');
+    document.getElementById('calendar-card').style.display = 'none';
+
+    var sc = document.getElementById('success-card');
+    sc.classList.add('show');
+    document.getElementById('success-detail').innerHTML =
+      'Coffee on <strong>' + selectedDay.label + ', ' + selectedDay.date + '</strong><br>at <strong>' + selectedTime + '</strong> ☕';
+  }
+</script>
+</body>
+</html>
