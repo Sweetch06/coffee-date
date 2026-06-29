@@ -1,4 +1,4 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -6,11 +6,17 @@ module.exports = async function handler(req, res) {
   const { day, time } = req.body;
   if (!day || !time) return res.status(400).json({ error: 'Missing fields' });
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
 
-  const { data, error } = await resend.emails.send({
-    from: 'for-leti <onboarding@resend.dev>',
-    to: process.env.NOTIFY_EMAIL,
+  await transporter.sendMail({
+    from: `"for-leti ☕" <${process.env.GMAIL_USER}>`,
+    to: process.env.GMAIL_USER,
     subject: '☕ She said yes to coffee!',
     html: `
       <div style="font-family:Georgia,serif;max-width:480px;margin:0 auto;padding:2rem;color:#2c1e1e;">
@@ -22,10 +28,8 @@ module.exports = async function handler(req, res) {
         </div>
         <p style="margin-top:1.5rem;font-size:13px;color:#a07878;">Sent from for-leti</p>
       </div>
-    `
+    `,
   });
-
-  if (error) return res.status(500).json({ error: 'Failed to send' });
 
   res.status(200).json({ ok: true });
 };
