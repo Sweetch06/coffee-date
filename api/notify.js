@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
     `
   });
 
-  if (error) return res.status(500).json({ error });
+  if (error) return res.status(500).json({ error: 'Failed to send' });
 
-  res.status(200).json({ ok: true, id: data.id, to: process.env.NOTIFY_EMAIL });
+  res.status(200).json({ ok: true });
 };
