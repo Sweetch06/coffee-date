@@ -33,7 +33,6 @@
       overflow: hidden;
     }
 
-    /* Subtle dot pattern background */
     body::before {
       content: '';
       position: fixed;
@@ -44,6 +43,23 @@
       pointer-events: none;
     }
 
+    /* ── Floating hearts canvas ── */
+    #hearts-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Confetti canvas ── */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+    }
+
     .page {
       width: 100vw;
       min-height: 100vh;
@@ -52,6 +68,7 @@
       justify-content: center;
       padding: 2rem;
       position: relative;
+      z-index: 1;
     }
 
     .card {
@@ -69,7 +86,6 @@
       position: relative;
     }
 
-    /* decorative corner lines */
     .card::before, .card::after {
       content: '';
       position: absolute;
@@ -82,7 +98,6 @@
     .card::before { top: 16px; left: 16px; border-width: 1.5px 0 0 1.5px; border-radius: 4px 0 0 0; }
     .card::after  { bottom: 16px; right: 16px; border-width: 0 1.5px 1.5px 0; border-radius: 0 0 4px 0; }
 
-    /* SVG Coffee icon */
     .coffee-wrap {
       width: 72px;
       height: 72px;
@@ -110,6 +125,18 @@
       margin-bottom: 0.75rem;
     }
 
+    /* Typing cursor */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--ink);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.9s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
     h1 {
       font-family: 'Playfair Display', serif;
       font-size: 30px;
@@ -117,6 +144,7 @@
       color: var(--ink);
       line-height: 1.25;
       margin-bottom: 0.6rem;
+      min-height: 2.6em;
     }
 
     .sub {
@@ -125,16 +153,29 @@
       margin-bottom: 2.5rem;
       font-style: italic;
       font-family: 'Playfair Display', serif;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
+    .sub.visible { opacity: 1; }
 
     .divider {
       width: 40px;
       height: 1.5px;
       background: linear-gradient(to right, transparent, var(--rose), transparent);
       margin: 0 auto 2.5rem;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
+    .divider.visible { opacity: 1; }
 
-    .btn-row { display: flex; gap: 14px; justify-content: center; }
+    .btn-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .btn-row.visible { opacity: 1; }
 
     .btn-yes {
       background: var(--rose);
@@ -154,7 +195,6 @@
     .btn-yes:active { transform: scale(0.97); }
 
     .btn-no {
-      background: transparent;
       color: var(--ink-light);
       border: 1px solid var(--latte);
       padding: 14px 38px;
@@ -169,6 +209,8 @@
       z-index: 999;
       backdrop-filter: blur(8px);
       background: rgba(253, 248, 244, 0.85);
+      transition: transform 0.2s ease, font-size 0.3s ease, opacity 0.3s ease;
+      transform-origin: center;
     }
 
     /* ── Calendar ── */
@@ -255,7 +297,19 @@
 
     .success-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #3a9e65; margin-bottom: 0.6rem; }
     .success-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 500; color: var(--ink); margin-bottom: 0.6rem; }
-    .success-detail { font-size: 15px; color: var(--ink-light); line-height: 1.75; margin-bottom: 1.5rem; font-family: 'Playfair Display', serif; font-style: italic; }
+    .success-detail { font-size: 15px; color: var(--ink-light); line-height: 1.75; margin-bottom: 1rem; font-family: 'Playfair Display', serif; font-style: italic; }
+
+    .countdown {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-mid);
+      margin-bottom: 1.5rem;
+      background: var(--rose-pale);
+      border-radius: 50px;
+      padding: 8px 20px;
+      display: inline-block;
+    }
+    .countdown strong { color: var(--rose); font-weight: 600; }
 
     .badge {
       display: inline-flex; align-items: center; gap: 7px;
@@ -273,32 +327,31 @@
 </head>
 <body>
 
+<canvas id="hearts-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
 <div class="page">
 
   <!-- Invite -->
   <div class="card" id="invite-card">
     <div class="coffee-wrap" aria-hidden="true">
       <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- steam -->
         <path d="M13 6 Q14 3.5 13 1" stroke="#c0475e" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M18 6 Q19 3.5 18 1" stroke="#c0475e" stroke-width="1.5" stroke-linecap="round"/>
         <path d="M23 6 Q24 3.5 23 1" stroke="#c0475e" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- cup -->
         <path d="M8 10h20l-2.5 14a2 2 0 01-2 1.7H12.5a2 2 0 01-2-1.7L8 10z" fill="#f5e6e9" stroke="#c0475e" stroke-width="1.5" stroke-linejoin="round"/>
-        <!-- handle -->
         <path d="M28 13.5 Q34 13.5 34 18 Q34 22.5 28 22.5" stroke="#c0475e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <!-- saucer -->
         <path d="M5 27.5 Q18 30 31 27.5" stroke="#c0475e" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </div>
 
     <p class="eyebrow">A little confession</p>
-    <h1>I think you<br><em>are cute</em></h1>
-    <div class="divider"></div>
-    <p class="sub">Want to grab coffee with me?</p>
+    <h1 id="typed-h1"><span id="typed-text"></span><span class="cursor" id="cursor"></span></h1>
+    <div class="divider" id="divider"></div>
+    <p class="sub" id="sub-text">Want to grab coffee with me?</p>
 
-    <div class="btn-row">
-      <button class="btn-yes" onclick="showCalendar()">Yes, let's do it</button>
+    <div class="btn-row" id="btn-row">
+      <button class="btn-yes" onclick="onYes()">Yes, let's do it</button>
       <button class="btn-no" id="btn-no">No</button>
     </div>
   </div>
@@ -315,34 +368,30 @@
         <circle cx="24" cy="22" r="1.5" fill="#c0475e"/>
       </svg>
     </div>
-
     <p class="cal-eyebrow">Wonderful</p>
     <p class="cal-title">Pick your perfect day</p>
     <p class="cal-sub">I'll be there, no matter what</p>
-
     <p class="section-label">Day</p>
     <div class="day-grid" id="day-grid"></div>
-
     <div class="time-section" id="time-section">
       <p class="section-label">Time</p>
       <div class="time-grid" id="time-grid"></div>
     </div>
-
     <button class="confirm-btn" id="confirm-btn" disabled onclick="confirmDate()">Confirm our coffee date</button>
   </div>
 
   <!-- Success -->
   <div class="card" id="success-card">
     <div class="success-icon" aria-hidden="true">
-      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 34 34" fill="none">
         <circle cx="17" cy="17" r="13" fill="#edf7f0" stroke="#3a9e65" stroke-width="1.5"/>
         <path d="M10 17.5l5 5 9-9" stroke="#3a9e65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-
     <p class="success-eyebrow">It's happening</p>
     <p class="success-title">It's a date</p>
     <p class="success-detail" id="success-detail"></p>
+    <p class="countdown" id="countdown"></p>
     <span class="badge">
       <svg viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="#2a7a4e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Saved
@@ -352,9 +401,108 @@
 </div>
 
 <script>
-  var selectedDay = null;
-  var selectedTime = null;
+  /* ── Floating hearts ── */
+  (function() {
+    var canvas = document.getElementById('hearts-canvas');
+    var ctx = canvas.getContext('2d');
+    var hearts = [];
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function spawnHeart() {
+      hearts.push({
+        x: Math.random() * window.innerWidth,
+        y: window.innerHeight + 20,
+        size: 8 + Math.random() * 14,
+        speed: 0.5 + Math.random() * 0.8,
+        drift: (Math.random() - 0.5) * 0.4,
+        opacity: 0.12 + Math.random() * 0.18,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.015 + Math.random() * 0.02
+      });
+    }
+
+    function drawHeart(ctx, x, y, size) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + size * 0.3);
+      ctx.bezierCurveTo(x, y, x - size * 0.5, y, x - size * 0.5, y + size * 0.3);
+      ctx.bezierCurveTo(x - size * 0.5, y + size * 0.65, x, y + size * 0.9, x, y + size);
+      ctx.bezierCurveTo(x, y + size * 0.9, x + size * 0.5, y + size * 0.65, x + size * 0.5, y + size * 0.3);
+      ctx.bezierCurveTo(x + size * 0.5, y, x, y, x, y + size * 0.3);
+      ctx.closePath();
+    }
+
+    var spawnInterval = setInterval(spawnHeart, 1200);
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hearts = hearts.filter(function(h){ return h.y > -40; });
+      hearts.forEach(function(h) {
+        h.y -= h.speed;
+        h.wobble += h.wobbleSpeed;
+        h.x += Math.sin(h.wobble) * h.drift;
+        ctx.save();
+        ctx.globalAlpha = h.opacity;
+        ctx.fillStyle = '#c0475e';
+        ctx.translate(h.x, h.y);
+        drawHeart(ctx, -h.size * 0.5, -h.size * 0.5, h.size);
+        ctx.fill();
+        ctx.restore();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+    for (var i = 0; i < 5; i++) spawnHeart();
+  })();
+
+  /* ── Typing animation ── */
+  (function() {
+    var lines = ['I think you', 'are cute'];
+    var el = document.getElementById('typed-text');
+    var cursor = document.getElementById('cursor');
+    var full = lines[0] + '\n' + lines[1];
+    var i = 0;
+    var delay = 600;
+
+    function type() {
+      if (i < full.length) {
+        var ch = full[i];
+        if (ch === '\n') {
+          el.innerHTML = el.innerHTML + '<br><em>';
+        } else {
+          el.innerHTML = el.innerHTML + ch;
+        }
+        i++;
+        setTimeout(type, i === lines[0].length + 1 ? 300 : 70 + Math.random() * 40);
+      } else {
+        el.innerHTML = el.innerHTML + '</em>';
+        setTimeout(function() {
+          cursor.style.display = 'none';
+          document.getElementById('divider').classList.add('visible');
+          setTimeout(function() {
+            document.getElementById('sub-text').classList.add('visible');
+            setTimeout(function() {
+              document.getElementById('btn-row').classList.add('visible');
+              setTimeout(initNoBtn, 100);
+            }, 400);
+          }, 300);
+        }, 500);
+      }
+    }
+
+    setTimeout(type, delay);
+  })();
+
+  /* ── No button — scared & shrinking ── */
   var noBtn = document.getElementById('btn-no');
+  var noPhrases = ['No', 'please no', 'stop it', "i'm begging you", '...fine'];
+  var noClicks = 0;
+  var noScale = 1;
 
   function initNoBtn() {
     var row = document.querySelector('.btn-row');
@@ -366,21 +514,114 @@
   }
 
   function runAway() {
-    var margin = 16;
-    var btnW = noBtn.offsetWidth;
-    var btnH = noBtn.offsetHeight;
-    var maxX = window.innerWidth  - btnW - margin;
-    var maxY = window.innerHeight - btnH - margin;
-    noBtn.style.left = (Math.random() * maxX + margin) + 'px';
-    noBtn.style.top  = (Math.random() * maxY + margin) + 'px';
+    noClicks = Math.min(noClicks + 1, noPhrases.length - 1);
+    noBtn.textContent = noPhrases[noClicks];
+    noScale = Math.max(0.55, noScale - 0.1);
+    noBtn.style.transform = 'scale(' + noScale + ')';
+
+    if (noClicks >= noPhrases.length - 1) {
+      noBtn.style.opacity = '0';
+      setTimeout(function(){ noBtn.style.display = 'none'; }, 400);
+      return;
+    }
+
+    var margin = 20;
+    var btnW = noBtn.offsetWidth * noScale;
+    var btnH = noBtn.offsetHeight * noScale;
+    noBtn.style.left = (margin + Math.random() * (window.innerWidth  - btnW - margin * 2)) + 'px';
+    noBtn.style.top  = (margin + Math.random() * (window.innerHeight - btnH - margin * 2)) + 'px';
   }
 
   noBtn.addEventListener('mouseover', runAway);
   noBtn.addEventListener('touchstart', function(e){ e.preventDefault(); runAway(); }, { passive: false });
   noBtn.addEventListener('click', function(e){ e.preventDefault(); runAway(); });
-
-  window.addEventListener('load', function(){ setTimeout(initNoBtn, 50); });
   window.addEventListener('resize', initNoBtn);
+
+  /* ── Coffee clink sound (Web Audio API) ── */
+  function playClink() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.5);
+
+      var osc2 = ctx.createOscillator();
+      var gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1200, ctx.currentTime + 0.06);
+      osc2.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.2);
+      gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.06);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc2.start(ctx.currentTime + 0.06);
+      osc2.stop(ctx.currentTime + 0.5);
+    } catch(e) {}
+  }
+
+  /* ── Confetti burst ── */
+  function launchConfetti() {
+    var canvas = document.getElementById('confetti-canvas');
+    canvas.style.display = 'block';
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var ctx = canvas.getContext('2d');
+    var pieces = [];
+    var colors = ['#c0475e','#e8d5c4','#f5e6e9','#9b3349','#fdf2f4','#6b4f4f'];
+
+    for (var i = 0; i < 120; i++) {
+      pieces.push({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        vx: (Math.random() - 0.5) * 14,
+        vy: -6 - Math.random() * 10,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        w: 6 + Math.random() * 8,
+        h: 3 + Math.random() * 5,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.2,
+        alpha: 1
+      });
+    }
+
+    var start = null;
+    function draw(ts) {
+      if (!start) start = ts;
+      var elapsed = ts - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var alive = false;
+      pieces.forEach(function(p) {
+        p.x  += p.vx;
+        p.vy += 0.35;
+        p.y  += p.vy;
+        p.rot += p.rotSpeed;
+        p.alpha = Math.max(0, 1 - elapsed / 2200);
+        if (p.alpha > 0) alive = true;
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      if (alive) requestAnimationFrame(draw);
+      else { canvas.style.display = 'none'; }
+    }
+    requestAnimationFrame(draw);
+  }
+
+  /* ── Calendar ── */
+  var selectedDay = null;
+  var selectedTime = null;
 
   function getDates() {
     var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -390,16 +631,20 @@
     return [0,1,2].map(function(offset){
       var d = new Date(today);
       d.setDate(today.getDate() + toFri + offset);
-      return { label: days[d.getDay()], date: months[d.getMonth()] + ' ' + d.getDate(), full: d.toDateString() };
+      return { label: days[d.getDay()], date: months[d.getMonth()] + ' ' + d.getDate(), full: d.toDateString(), dateObj: d };
     });
   }
 
-  var times = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
+  var times = ['4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM'];
+
+  function onYes() {
+    playClink();
+    setTimeout(showCalendar, 180);
+  }
 
   function showCalendar() {
     document.getElementById('invite-card').style.display = 'none';
     noBtn.style.display = 'none';
-
     var calCard = document.getElementById('calendar-card');
     calCard.classList.add('show');
 
@@ -437,16 +682,46 @@
     document.getElementById('confirm-btn').disabled = !(selectedDay && selectedTime);
   }
 
+  /* ── Countdown timer ── */
+  var dateTarget = null;
+  function startCountdown() {
+    var el = document.getElementById('countdown');
+    function tick() {
+      if (!dateTarget) return;
+      var now  = new Date();
+      var diff = dateTarget - now;
+      if (diff <= 0) { el.innerHTML = '<strong>It\'s time!</strong> Go get that coffee.'; return; }
+      var days  = Math.floor(diff / 86400000);
+      var hours = Math.floor((diff % 86400000) / 3600000);
+      var mins  = Math.floor((diff % 3600000)  / 60000);
+      el.innerHTML = '<strong>' + days + 'd ' + hours + 'h ' + mins + 'm</strong> until our date';
+      setTimeout(tick, 30000);
+    }
+    tick();
+  }
+
   function confirmDate() {
     var booking = { day: selectedDay.full, time: selectedTime, confirmedAt: new Date().toISOString() };
     try { localStorage.setItem('coffeeDate', JSON.stringify(booking)); } catch(e) {}
 
+    fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day: selectedDay.label + ', ' + selectedDay.date, time: selectedTime })
+    }).catch(function(){});
+
+    var hourMap = { '4:00 PM':16,'5:00 PM':17,'6:00 PM':18,'7:00 PM':19,'8:00 PM':20,'9:00 PM':21 };
+    dateTarget = new Date(selectedDay.dateObj);
+    dateTarget.setHours(hourMap[selectedTime] || 16, 0, 0, 0);
+
     document.getElementById('calendar-card').classList.remove('show');
     document.getElementById('calendar-card').style.display = 'none';
-
     document.getElementById('success-card').classList.add('show');
     document.getElementById('success-detail').innerHTML =
       selectedDay.label + ', ' + selectedDay.date + ' at ' + selectedTime;
+
+    launchConfetti();
+    startCountdown();
   }
 </script>
 </body>
