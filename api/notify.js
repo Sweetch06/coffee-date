@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'for-leti <onboarding@resend.dev>',
     to: process.env.NOTIFY_EMAIL,
     subject: '☕ She said yes to coffee!',
@@ -25,5 +25,7 @@ module.exports = async function handler(req, res) {
     `
   });
 
-  res.status(200).json({ ok: true });
+  if (error) return res.status(500).json({ error });
+
+  res.status(200).json({ ok: true, id: data.id, to: process.env.NOTIFY_EMAIL });
 };
