@@ -211,6 +211,7 @@
       background: rgba(253, 248, 244, 0.85);
       transition: transform 0.2s ease, font-size 0.3s ease, opacity 0.3s ease;
       transform-origin: center;
+      visibility: hidden;
     }
 
     /* ── Calendar ── */
@@ -511,6 +512,7 @@
     var btnH = noBtn.offsetHeight;
     noBtn.style.left = (rect.right - btnW) + 'px';
     noBtn.style.top  = (rect.top + (rect.height - btnH) / 2) + 'px';
+    noBtn.style.visibility = 'visible';
   }
 
   function runAway() {
